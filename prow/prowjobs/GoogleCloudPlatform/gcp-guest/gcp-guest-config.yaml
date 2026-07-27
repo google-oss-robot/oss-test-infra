@@ -655,7 +655,7 @@ periodics:
       args:
       - "-parallel_count=50"
       - "-project=gcp-guest"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-b,europe-west1-b,asia-east1-a"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
       # Please keep filter list synced between all release package images. Edit only this list; copy/paste from this for all other configurations.
@@ -663,6 +663,7 @@ periodics:
       - "-set_exit_status=false"
       - "-x86_shape=e2-standard-2"
       - "-architecture_type=x86"
+      - "-timeout=60m"
 - name: cit-periodics-release-package-c3
   cluster: gcp-guest
   decorate: true
@@ -682,7 +683,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-b,europe-west1-b,asia-southeast1-a"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
       # Please keep filter list synced between all release package images. Do not edit this list; copy/paste from line 661 for any updates.
@@ -690,6 +691,7 @@ periodics:
       - "-set_exit_status=false"
       - "-x86_shape=c3-standard-4"
       - "-architecture_type=x86"
+      - "-timeout=60m"
 - name: cit-periodics-release-package-c4a
   cluster: gcp-guest
   decorate: true
@@ -709,7 +711,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-east1-a"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
       # Please keep filter list synced between all release package images. Do not edit this list; copy/paste from line 661 for any updates.
@@ -717,6 +719,7 @@ periodics:
       - "-set_exit_status=false"
       - "-arm64_shape=c4a-standard-4"
       - "-architecture_type=arm64"
+      - "-timeout=60m"
 - name: cit-periodics-release-package-n4
   cluster: gcp-guest
   decorate: true
@@ -736,7 +739,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-b,europe-west1-b,asia-east1-a"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
       # Please keep filter list synced between all release package images. Do not edit this list; copy/paste from line 661 for any updates.
@@ -744,3 +747,4 @@ periodics:
       - "-set_exit_status=false"
       - "-x86_shape=n4-standard-4"
       - "-architecture_type=x86"
+      - "-timeout=60m"
