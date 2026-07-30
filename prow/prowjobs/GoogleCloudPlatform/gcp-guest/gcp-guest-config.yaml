@@ -663,7 +663,6 @@ periodics:
       - "-set_exit_status=false"
       - "-x86_shape=e2-standard-2"
       - "-architecture_type=x86"
-      - "-timeout=60m"
 - name: cit-periodics-release-package-c3
   cluster: gcp-guest
   decorate: true
@@ -691,7 +690,6 @@ periodics:
       - "-set_exit_status=false"
       - "-x86_shape=c3-standard-4"
       - "-architecture_type=x86"
-      - "-timeout=60m"
 - name: cit-periodics-release-package-c4a
   cluster: gcp-guest
   decorate: true
@@ -719,7 +717,6 @@ periodics:
       - "-set_exit_status=false"
       - "-arm64_shape=c4a-standard-4"
       - "-architecture_type=arm64"
-      - "-timeout=60m"
 - name: cit-periodics-release-package-n4
   cluster: gcp-guest
   decorate: true
@@ -747,4 +744,3 @@ periodics:
       - "-set_exit_status=false"
       - "-x86_shape=n4-standard-4"
       - "-architecture_type=x86"
-      - "-timeout=60m"
