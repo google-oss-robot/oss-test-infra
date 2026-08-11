@@ -5,6 +5,10 @@ presubmits:
     cluster: build-kube-agents
     always_run: true
     skip_report: false
+    # Reported on every PR but not merge-blocking: the job provisions a GKE
+    # cluster and runs a full eval, so it is currently too slow to gate Tide on.
+    # Drop this once the runtime is down.
+    optional: true
     decorate: true
     decoration_config:
       timeout: 2h
