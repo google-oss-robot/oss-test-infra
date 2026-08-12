@@ -12,7 +12,11 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 2h
+      # The job averages ~43min, so 2h let a single hang sit on the only slot
+      # for nearly three times a normal run. 80m leaves generous headroom over
+      # the average while bounding what one wedged run costs the queue
+      # (gke-labs/kube-agents#635). Lower this again as the runtime comes down.
+      timeout: 80m
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
