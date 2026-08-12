@@ -26,7 +26,7 @@ presubmits:
         - -c
         - |
           set -euo pipefail
-          apt-get update && apt-get install -y --no-install-recommends make gettext-base golang-go git openssl ca-certificates curl
+          apt-get update && apt-get install -y --no-install-recommends gettext-base openssl
           gcloud components install gke-gcloud-auth-plugin --quiet
           curl -LsSf https://astral.sh/uv/install.sh | sh
           export PATH="$HOME/.local/bin:$PATH"
