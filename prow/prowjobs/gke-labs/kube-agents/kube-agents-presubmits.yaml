@@ -3,8 +3,9 @@ presubmits:
   - name: pull-kube-agents-smoke-test
     max_concurrency: 1
     cluster: build-kube-agents
-    always_run: true
+    always_run: false
     skip_report: false
+    skip_if_only_changed: '^(docs/|\.github/|examples/|[^/]+\.md$|LICENSE$|OWNERS$|OWNERS_ALIASES$)'
     # Reported on every PR but not merge-blocking: the job provisions a GKE
     # cluster and runs a full eval, so it is currently too slow to gate Tide on.
     # Drop this once the runtime is down.
