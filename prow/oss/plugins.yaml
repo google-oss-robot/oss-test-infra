@@ -75,7 +75,6 @@ lgtm:
   - chaotoppicks
   - google
   - grpc-ecosystem
-  - gke-labs/kube-agents
   review_acts_as_lgtm: true
 - repos:
   - GoogleContainerTools/config-sync
@@ -93,6 +92,10 @@ lgtm:
   - GoogleCloudPlatform/gke-mcp
   review_acts_as_lgtm: true
   trusted_team_for_sticky_lgtm: 'GKE MCP Contributors'
+- repos:
+  - gke-labs/kube-agents
+  review_acts_as_lgtm: true
+  trusted_team_for_sticky_lgtm: 'Googlers'
 
 label:
   additional_labels:
