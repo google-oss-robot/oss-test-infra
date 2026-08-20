@@ -1,9 +1,10 @@
 presubmits:
   gke-labs/kube-agents:
   - name: pull-kube-agents-smoke-test
-    # TODO: raise to 2 once job logs confirm acquire/heartbeat/release work across
-    # real runs. This caps parallelism only, Boskos still rotates across the pool.
-    max_concurrency: 1
+    # Boskos dynamically leases an evaluation project per run from the
+    # kube-agents-evals-project pool. max_concurrency: 2 allows 2 presubmit
+    # runs in parallel across the leased pool.
+    max_concurrency: 2
     # Boskos server, pool config and reaper for build-kube-agents:
     # gke-internal/test-infra deployments/gke-agentic-tooling-team/boskos
     # Pool must be configured there before raising max_concurrency.
