@@ -11,7 +11,9 @@ presubmits:
     cluster: build-kube-agents
     always_run: false
     skip_report: false
-    skip_if_only_changed: '^(docs/|\.github/|examples/)|\.md$|^(LICENSE|OWNERS|OWNERS_ALIASES)$'
+    # .md is root-anchored: agents/**/*.md is prompt content shipped in the
+    # image (deploy/docker/Dockerfile), so those PRs must still run the eval.
+    skip_if_only_changed: '^(docs/|\.github/|examples/)|^[^/]+\.md$|^(LICENSE|OWNERS|OWNERS_ALIASES)$'
     # Reported on every PR but not merge-blocking: the job provisions a GKE
     # cluster and runs a full eval, so it is currently too slow to gate Tide on.
     # Drop this once the runtime is down.
@@ -66,6 +68,7 @@ presubmits:
             local rc=$?
             trap - EXIT INT TERM
             kill "${HEARTBEAT_PID:-}" 2>/dev/null || true
+            kill "${STEP_PID:-}" 2>/dev/null || true
             echo "=== [$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Running CI Teardown ==="
             ./hack/ci-teardown.sh || true
             if [ -n "${LEASED_PROJECT:-}" ] && [ "${LEASED_PROJECT}" != "null" ]; then
@@ -79,11 +82,28 @@ presubmits:
           ( "${BOSKOSCTL[@]}" heartbeat --resource "${RESOURCE}" --period=30s --retries=8 || kill -TERM $$ ) &
           HEARTBEAT_PID=$!
 
+          # Every step runs in the background and is waited on, because bash
+          # defers a trapped signal until the *foreground* command completes.
+          # Run in the foreground, a heartbeat failure mid-eval would sit
+          # pending for the rest of the ~40m step -- long past the 5m Boskos
+          # reaper window, so a concurrent run could lease the same project --
+          # and if the step then exited 0, cleanup would capture rc=0 and the
+          # job would go green having never run the eval. `wait` is
+          # interruptible, so the trap fires immediately and cleanup sees 143.
+          #
+          # Signalling the process group (kill -TERM 0) also interrupts
+          # promptly, but prow's entrypoint starts the job without Setpgid
+          # (sigs.k8s.io/prow pkg/entrypoint/run.go), so the group includes the
+          # entrypoint itself: it would mark the job aborted and SIGKILL this
+          # script once grace_period expires, cutting teardown and the Boskos
+          # release short. This form does not depend on that topology.
+          run_step() { "$@" & STEP_PID=$!; wait "${STEP_PID}"; }
+
           # Clean up any leftover state if a previous job was hard-killed
-          ./hack/ci-teardown.sh || true
-          ./hack/ci-connection-test.sh
-          ./hack/ci-deploy.sh
-          ./hack/ci-eval-pr.sh
+          run_step ./hack/ci-teardown.sh || true
+          run_step ./hack/ci-connection-test.sh
+          run_step ./hack/ci-deploy.sh
+          run_step ./hack/ci-eval-pr.sh
         resources:
           requests:
             memory: "1Gi"
