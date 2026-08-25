@@ -41,6 +41,18 @@ presubmits:
           export PATH="$HOME/.local/bin:$PATH"
           curl --proto '=https' --tlsv1.2 -fsSL https://get.opentofu.org/install-opentofu.sh -o install-opentofu.sh && chmod +x install-opentofu.sh && ./install-opentofu.sh --install-method standalone
           export GEMINI_API_KEY="$(cat /etc/gemini-secret/GEMINI_API_KEY)"
+          # The bench verifier reads back the GitHub ledger issue the run
+          # published and grades its contents; ledger_issue_contains has no
+          # other credential source, and the *-infra repos are private.
+          export BENCH_GITHUB_TOKEN="$(cat /etc/bench-github-token/BENCH_GITHUB_TOKEN)"
+          # Turns on the in-cluster token minter, which is what lets the agent
+          # write that issue. An App ID is an identifier, not a credential:
+          # minting requires signing a JWT with the App's private key, which
+          # is non-exportable inside each pool project's Cloud KMS. What bounds
+          # where a run can write is the App's installation list -- the three
+          # *-infra repos, repository_selection: selected -- not this value,
+          # which gke-labs/kube-agents already publishes.
+          export EVAL_GITHUB_APP_ID="4675512"
           export REQUIRE_CACHE="true"
           # ─── Ensure boskosctl is available (pinned version) ─────────────────────────
           if ! command -v boskosctl >/dev/null; then
@@ -112,7 +124,13 @@ presubmits:
         - name: gemini-secret
           mountPath: /etc/gemini-secret
           readOnly: true
+        - name: bench-github-token
+          mountPath: /etc/bench-github-token
+          readOnly: true
       volumes:
       - name: gemini-secret
         secret:
           secretName: kube-agents-gemini-api-key
+      - name: bench-github-token
+        secret:
+          secretName: kube-agents-bench-github-token
