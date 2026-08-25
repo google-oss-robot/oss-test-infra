@@ -108,8 +108,8 @@ tide:
   - repos:
     - kubeflow/pipelines
     author: "dependabot[bot]"
-    labels:
-    - ci-passed
+    # The ci-passed label is informational for this path: merge is gated by
+    # the required 'ci-passed' commit status in branch protection below.
     missingLabels:
     - do-not-merge
     - do-not-merge/hold
@@ -250,6 +250,14 @@ branch-protection:
       #required_status_checks:
       #  contexts:
       #  - cla/google
+      repos:
+        pipelines:
+          # Required merge gate (kubeflow/pipelines#14111): the ci-passed
+          # commit status is published on the verified head SHA only after
+          # the CI Check poll passes, so the label can remain informational.
+          required_status_checks:
+            contexts:
+            - ci-passed
       exclude:
       - "^revert-" # don't protect revert branches
       - "^dependabot/" # don't protect branches created by dependabot
