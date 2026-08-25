@@ -46,7 +46,12 @@ presubmits:
           # other credential source, and the *-infra repos are private.
           export BENCH_GITHUB_TOKEN="$(cat /etc/bench-github-token/BENCH_GITHUB_TOKEN)"
           # Turns on the in-cluster token minter, which is what lets the agent
-          # write that issue. Not a secret -- a GitHub App ID is public.
+          # write that issue. An App ID is an identifier, not a credential:
+          # minting requires signing a JWT with the App's private key, which
+          # is non-exportable inside each pool project's Cloud KMS. What bounds
+          # where a run can write is the App's installation list -- the three
+          # *-infra repos, repository_selection: selected -- not this value,
+          # which gke-labs/kube-agents already publishes.
           export EVAL_GITHUB_APP_ID="4675512"
           export REQUIRE_CACHE="true"
           # ─── Ensure boskosctl is available (pinned version) ─────────────────────────
