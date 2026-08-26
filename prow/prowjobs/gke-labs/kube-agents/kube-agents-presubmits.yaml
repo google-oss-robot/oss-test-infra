@@ -2,14 +2,17 @@ presubmits:
   gke-labs/kube-agents:
   - name: pull-kube-agents-smoke-test
     # Boskos dynamically leases an evaluation project per run from the
-    # kube-agents-evals-project pool, which holds three fully provisioned
-    # projects (kube-agents-evals, -2, -3 — the third completed 2026-08-24).
-    # max_concurrency matches the pool size, so the pool runs saturated: a
-    # project stuck dirty degrades throughput to 2 rather than queueing work.
-    max_concurrency: 3
+    # kube-agents-evals-project pool, which holds six fully provisioned
+    # projects (kube-agents-evals through -6 — the last three completed
+    # 2026-08-26). max_concurrency matches the pool size, so the pool runs
+    # saturated: a project stuck dirty degrades throughput to 5 rather than
+    # queueing work.
+    max_concurrency: 6
     # Boskos server, pool config and reaper for build-kube-agents:
     # gke-internal/test-infra deployments/gke-agentic-tooling-team/boskos
-    # Pool must gain a fourth project there before raising max_concurrency.
+    # That pool is the ceiling and this is the tap: raising this past the
+    # number of projects registered there does not add throughput, it makes
+    # the surplus runs block on a lease. Register first, raise second.
     cluster: build-kube-agents
     always_run: false
     skip_report: false
@@ -71,7 +74,7 @@ presubmits:
           # write that issue. An App ID is an identifier, not a credential:
           # minting requires signing a JWT with the App's private key, which
           # is non-exportable inside each pool project's Cloud KMS. What bounds
-          # where a run can write is the App's installation list -- the three
+          # where a run can write is the App's installation list -- the six
           # *-infra repos, repository_selection: selected -- not this value,
           # which gke-labs/kube-agents already publishes.
           export EVAL_GITHUB_APP_ID="4675512"
