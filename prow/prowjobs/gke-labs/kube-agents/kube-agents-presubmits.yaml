@@ -2,12 +2,14 @@ presubmits:
   gke-labs/kube-agents:
   - name: pull-kube-agents-smoke-test
     # Boskos dynamically leases an evaluation project per run from the
-    # kube-agents-evals-project pool. max_concurrency: 2 allows 2 presubmit
-    # runs in parallel across the leased pool.
-    max_concurrency: 2
+    # kube-agents-evals-project pool, which holds three fully provisioned
+    # projects (kube-agents-evals, -2, -3 — the third completed 2026-08-24).
+    # max_concurrency matches the pool size, so the pool runs saturated: a
+    # project stuck dirty degrades throughput to 2 rather than queueing work.
+    max_concurrency: 3
     # Boskos server, pool config and reaper for build-kube-agents:
     # gke-internal/test-infra deployments/gke-agentic-tooling-team/boskos
-    # Pool must be configured there before raising max_concurrency.
+    # Pool must gain a fourth project there before raising max_concurrency.
     cluster: build-kube-agents
     always_run: false
     skip_report: false
@@ -35,7 +37,9 @@ presubmits:
         - -c
         - |
           set -euo pipefail
-          apt-get update && apt-get install -y --no-install-recommends gettext-base jq
+          # procps for pkill: cleanup() uses it to reap the heartbeat's
+          # boskosctl child, and its `|| true` would swallow a missing binary.
+          apt-get update && apt-get install -y --no-install-recommends gettext-base jq procps
           command -v gke-gcloud-auth-plugin >/dev/null
           curl -LsSf https://astral.sh/uv/install.sh | sh
           export PATH="$HOME/.local/bin:$PATH"
@@ -55,8 +59,35 @@ presubmits:
           export EVAL_GITHUB_APP_ID="4675512"
           export REQUIRE_CACHE="true"
           # ─── Ensure boskosctl is available (pinned version) ─────────────────────────
+          # Named once, used by both the GCS fast path and the fallback below.
+          BOSKOSCTL_VERSION="v0.0.0-20260730151943-11fb0c84248b"
           if ! command -v boskosctl >/dev/null; then
-            GOBIN=/usr/local/bin go install sigs.k8s.io/boskos/cmd/boskosctl@v0.0.0-20260730151943-11fb0c84248b
+            # Prefer a binary staged in a bucket we own. gke-labs/kube-agents#943
+            # died here: proxy.golang.org answered INTERNAL_ERROR and the job
+            # exited before it had leased a project, so no task ran at all and
+            # there was nothing for a rerun to repeat. A pinned binary does not
+            # need the public module proxy on the critical path of every run.
+            #
+            # NOTE: gs://kube-agents-prow/tools/boskosctl-* does not exist yet.
+            # Until somebody stages it, this copy always misses and the fallback
+            # is the real path -- which is why the fallback is retried.
+            if gsutil -q cp "gs://kube-agents-prow/tools/boskosctl-${BOSKOSCTL_VERSION}" /usr/local/bin/boskosctl; then
+              chmod +x /usr/local/bin/boskosctl
+              echo "✓ boskosctl ${BOSKOSCTL_VERSION} restored from GCS"
+            else
+              echo "boskosctl ${BOSKOSCTL_VERSION} not in GCS; falling back to the module proxy"
+              for attempt in 1 2 3; do
+                if GOBIN=/usr/local/bin go install "sigs.k8s.io/boskos/cmd/boskosctl@${BOSKOSCTL_VERSION}"; then
+                  break
+                fi
+                if [ "${attempt}" -eq 3 ]; then
+                  echo "ERROR: go install boskosctl failed 3 times; proxy.golang.org is the usual cause"
+                  exit 1
+                fi
+                echo "go install attempt ${attempt} failed; retrying in $((attempt * 15))s"
+                sleep "$((attempt * 15))"
+              done
+            fi
           fi
 
           # ─── Boskos Lease, Heartbeat & Cleanup Handler ──────────────────────────────
@@ -76,9 +107,35 @@ presubmits:
           export PROJECT_ID="${LEASED_PROJECT}"
           echo "✓ Successfully leased project: ${PROJECT_ID}"
 
+          # Marks "teardown has begun" for the heartbeat's abort fallback. Its
+          # directory is created fresh by mktemp -d, so the sentinel provably
+          # does not exist until cleanup() creates it -- a fixed path could be
+          # left behind by an earlier run and would silence the abort for the
+          # whole job.
+          TEARDOWN_DIR="$(mktemp -d)"
+          TEARDOWN_SENTINEL="${TEARDOWN_DIR}/teardown-begun"
+
           cleanup() {
             local rc=$?
             trap - EXIT INT TERM
+            # Before the kills, and this ordering is the point. If the
+            # heartbeat exhausts its retries in the window between `trap -`
+            # above and the subshell actually dying, its `kill -TERM $$`
+            # fallback lands with no handler installed and terminates this
+            # script mid-teardown -- before ci-teardown.sh finishes and before
+            # the Boskos release, leaking GKE resources into a project the next
+            # lease hands straight to somebody else. The sentinel silences the
+            # fallback for an expiry during intentional teardown only; a
+            # heartbeat that dies mid-eval still aborts the run.
+            touch "${TEARDOWN_SENTINEL}"
+            # boskosctl is a child of the subshell, not the subshell itself:
+            # the subshell body is a compound command, so bash does not
+            # exec-optimise it away. Killing only ${HEARTBEAT_PID} orphans a
+            # heartbeat that keeps beating a resource this cleanup is about to
+            # release, and Boskos answers 401 Unauthorized on the owner
+            # mismatch -- nine of them, matching --retries=8. That reads like a
+            # credential problem next to a Boskos release and is not one.
+            pkill -P "${HEARTBEAT_PID:-0}" 2>/dev/null || true
             kill "${HEARTBEAT_PID:-}" 2>/dev/null || true
             kill "${STEP_PID:-}" 2>/dev/null || true
             echo "=== [$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Running CI Teardown ==="
@@ -91,7 +148,13 @@ presubmits:
           }
           trap cleanup EXIT INT TERM
 
-          ( "${BOSKOSCTL[@]}" heartbeat --resource "${RESOURCE}" --period=30s --retries=8 || kill -TERM $$ ) &
+          # The abort fallback fires only while the eval is still running. Once
+          # cleanup() has touched the sentinel the resource is on its way back
+          # to the pool, so an expiring heartbeat is expected and must not
+          # signal a script that is mid-teardown. `$$` is still this script's
+          # PID inside the subshell, which is what the comment below is about.
+          ( "${BOSKOSCTL[@]}" heartbeat --resource "${RESOURCE}" --period=30s --retries=8 \
+              || { [ -e "${TEARDOWN_SENTINEL}" ] || kill -TERM $$; } ) &
           HEARTBEAT_PID=$!
 
           # Every step runs in the background and is waited on, because bash
