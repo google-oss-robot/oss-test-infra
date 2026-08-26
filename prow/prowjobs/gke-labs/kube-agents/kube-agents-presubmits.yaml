@@ -22,11 +22,29 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      # The job averages ~43min, so 2h let a single hang sit on the only slot
-      # for nearly three times a normal run. 80m leaves generous headroom over
-      # the average while bounding what one wedged run costs the queue
-      # (gke-labs/kube-agents#635). Lower this again as the runtime comes down.
-      timeout: 85m
+      # Sized at roughly 2x the expected run, which is the ratio 85m held
+      # against the ~43min average it was set for (gke-labs/kube-agents#635).
+      # What moved is the expected run, not the policy: the job used to make
+      # two devops-bench invocations and now makes nine.
+      #
+      #   two active tasks x one run each  ->  ~43min   (85m, ~2.0x)
+      #   three active tasks x three reps  ->  ~78min   (150m, ~1.9x)
+      #
+      # Two changes get it there. gke-labs/kube-agents#939 activated a third
+      # case (cluster-agent-crashloop-debug), and #925 runs each case
+      # EVAL_REPETITIONS times, default 3, because the gate it lands grades a
+      # pass RATE per case rather than a single pass -- one flaky run no
+      # longer reds the job, but three runs are what a rate is computed from.
+      # Only the ~5min per task-repetition scales with that; the ~33min of
+      # Boskos lease, image build and deploy is paid once either way.
+      #
+      # 78min is an ESTIMATE and wants replacing with a measurement from the
+      # first runs at three repetitions. It is also probably pessimistic:
+      # gke-labs/kube-agents#951 stopped gpu-stress-test-diagnosis creating
+      # its own cluster per invocation, and cluster creation was the bulk of
+      # what a repetition of that task cost. Lower this again once the runs
+      # say what the number really is.
+      timeout: 150m
       grace_period: 5m
     spec:
       serviceAccountName: prowjob-default-sa
