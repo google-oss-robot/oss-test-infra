@@ -22,29 +22,55 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      # Sized at roughly 2x the expected run, which is the ratio 85m held
-      # against the ~43min average it was set for (gke-labs/kube-agents#635).
-      # What moved is the expected run, not the policy: the job used to make
-      # two devops-bench invocations and now makes nine.
+      # 85m was ~2x the ~43min this job averaged when it made two devops-bench
+      # invocations (gke-labs/kube-agents#635). It now makes THIRTY, and the
+      # policy of sizing above the expected run is unchanged -- only the
+      # expected run moved.
       #
-      #   two active tasks x one run each  ->  ~43min   (85m, ~2.0x)
-      #   three active tasks x three reps  ->  ~78min   (150m, ~1.9x)
+      #   two active tasks  x one run each  ->  ~43min   (85m,  2.0x)
+      #   ten active tasks  x one run each  ->  ~69min   (150m, 2.2x)
+      #   ten active tasks  x three reps    -> ~172min   (240m, 1.4x)
       #
-      # Two changes get it there. gke-labs/kube-agents#939 activated a third
-      # case (cluster-agent-crashloop-debug), and #925 runs each case
+      # Two independent changes get it there. gke-labs/kube-agents#956 took the
+      # active task matrix from three cases to ten -- six domain probes, one
+      # full-audit canary, and the incumbents. And #925 runs each case
       # EVAL_REPETITIONS times, default 3, because the gate it lands grades a
-      # pass RATE per case rather than a single pass -- one flaky run no
-      # longer reds the job, but three runs are what a rate is computed from.
-      # Only the ~5min per task-repetition scales with that; the ~33min of
-      # Boskos lease, image build and deploy is paid once either way.
+      # pass RATE per case rather than a single pass: one flaky run no longer
+      # reds the job, but three runs are what a rate is computed from.
       #
-      # 78min is an ESTIMATE and wants replacing with a measurement from the
-      # first runs at three repetitions. It is also probably pessimistic:
-      # gke-labs/kube-agents#951 stopped gpu-stress-test-diagnosis creating
-      # its own cluster per invocation, and cluster creation was the bulk of
-      # what a repetition of that task cost. Lower this again once the runs
-      # say what the number really is.
-      timeout: 150m
+      # 172min is MEASURED at one repetition and scaled, not estimated. Build
+      # 2092820036916875264 -- the run #956 merged on -- executed all ten tasks
+      # once in 68.9min wall (started.json -> finished.json):
+      #
+      #   fixed: Boskos lease, image build (710s), deploy, teardown   17.3min
+      #   consistency-authorized-networks-probe                       1039s
+      #   compliance-rbac-overgrant (the full-audit canary)            827s
+      #   gpu-stress-test-diagnosis                                    244s
+      #   cost-idle-pool-probe                                         175s
+      #   security-overgrant-probe                                     164s
+      #   cluster-agent-crashloop-debug                                149s
+      #   reliability-pdb-probe                                        148s
+      #   capacity-pinned-pool-probe                                   139s
+      #   agent-kanban-smoke                                           106s
+      #   upgrades-lagging-master-probe                                104s
+      #
+      # Only the 51.6min of invocations scales, so three repetitions is
+      # 17.3 + 3 x 51.6 = ~172min.
+      #
+      # 150m against that is 0.87x -- not a tight budget but a guaranteed
+      # timeout, which is why #925 cannot merge on the number #2667 set. 240m
+      # is 1.4x, thinner than this job's historical 2x, and it is not thinner
+      # still only because seeded-cluster reuse cut gpu-stress-test-diagnosis
+      # from 21.1min to 244s.
+      #
+      # The caveat, and it is a specific one rather than general unease:
+      # consistency-authorized-networks-probe cost 1039s against the 150-350s
+      # #956 budgets for each of its six probes, on the single run that exists.
+      # If that is its normal cost rather than one bad sample, the probe set is
+      # roughly a third more expensive than designed and 1.4x gets thin.
+      # Revisit in either direction once several runs at three repetitions
+      # exist.
+      timeout: 240m
       grace_period: 5m
     spec:
       serviceAccountName: prowjob-default-sa
