@@ -94,11 +94,16 @@ presubmits:
           # published and grades its contents; ledger_issue_contains has no
           # other credential source, and the *-infra repos are private.
           export BENCH_GITHUB_TOKEN="$(cat /etc/bench-github-token/BENCH_GITHUB_TOKEN)"
+          # hack/ci-eval-pr.sh mints a 1-hour installation token per
+          # devops-bench invocation and overwrites BENCH_GITHUB_TOKEN with it.
+          # App 4739812 is read-only and scoped to the *-infra repos.
+          # gke-labs/kube-agents#994.
+          export EVAL_LEDGER_APP_KEY_FILE="/etc/ledger-app-key/key.pem"
           # Turns on the in-cluster token minter, which is what lets the agent
           # write that issue. An App ID is an identifier, not a credential:
           # minting requires signing a JWT with the App's private key, which
           # is non-exportable inside each pool project's Cloud KMS. What bounds
-          # where a run can write is the App's installation list -- the six
+          # where a run can write is the App's installation list -- the
           # *-infra repos, repository_selection: selected -- not this value,
           # which gke-labs/kube-agents already publishes.
           export EVAL_GITHUB_APP_ID="4675512"
@@ -235,6 +240,9 @@ presubmits:
         - name: bench-github-token
           mountPath: /etc/bench-github-token
           readOnly: true
+        - name: ledger-app-key
+          mountPath: /etc/ledger-app-key
+          readOnly: true
       volumes:
       - name: gemini-secret
         secret:
@@ -242,3 +250,6 @@ presubmits:
       - name: bench-github-token
         secret:
           secretName: kube-agents-bench-github-token
+      - name: ledger-app-key
+        secret:
+          secretName: kube-agents-evals-ledger-app-key
