@@ -71,7 +71,7 @@ presubmits:
       # roughly a third more expensive than designed and 1.4x gets thin.
       # Revisit in either direction once several runs at three repetitions
       # exist.
-      timeout: 240m
+      timeout: 360m
       grace_period: 5m
     spec:
       serviceAccountName: prowjob-default-sa
@@ -102,14 +102,6 @@ presubmits:
           # *-infra repos, repository_selection: selected -- not this value,
           # which gke-labs/kube-agents already publishes.
           export EVAL_GITHUB_APP_ID="4675512"
-          # Presubmit runs each case ONCE; the nightly recorder owns flat-3
-          # repetitions and the statistics (kube-agents#1021, #1025). Measured
-          # 2026-08-30/31: full 3-rep presubmits hit this job's 240m deadline
-          # (10232s and two 240m+ timeouts on 15+ cases), and a required check
-          # people wait 3h for gets resented into irrelevance. The gate's
-          # collapse rule is verdict-compatible with 1 rep for unadmitted
-          # cases; revisit when adaptive repetitions land (925-review F2).
-          export EVAL_REPETITIONS="1"
           export REQUIRE_CACHE="true"
           # ─── Ensure boskosctl is available (pinned version) ─────────────────────────
           # Named once, used by both the GCS fast path and the fallback below.
