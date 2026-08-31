@@ -71,7 +71,7 @@ presubmits:
       # roughly a third more expensive than designed and 1.4x gets thin.
       # Revisit in either direction once several runs at three repetitions
       # exist.
-      timeout: 240m
+      timeout: 360m
       grace_period: 5m
     spec:
       serviceAccountName: prowjob-default-sa
