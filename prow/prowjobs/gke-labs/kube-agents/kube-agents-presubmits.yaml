@@ -17,10 +17,13 @@ presubmits:
     # .md is root-anchored: agents/**/*.md is prompt content shipped in the
     # image (deploy/docker/Dockerfile), so those PRs must still run the eval.
     skip_if_only_changed: '^(docs/|\.github/|examples/)|^[^/]+\.md$|^(LICENSE|OWNERS|OWNERS_ALIASES)$'
-    # Reported on every PR but not merge-blocking: the job provisions a GKE
-    # cluster and runs a full eval, so it is currently too slow to gate Tide on.
-    # Drop this once the runtime is down.
-    optional: true
+    # Merge-blocking since 2026-09: what blocks is not this flag alone but the
+    # BOOTSTRAP_ADMITTED roster in the repo's hack/ci-eval-pr.sh -- only cases
+    # named there can red a PR, and demoting a flaky case is a same-day edit
+    # on the kube-agents side, not a change here. Repetition collapse (a case
+    # fails only when all 3 repetitions fail) and the harness's infra
+    # classification absorb single-rep flake and endpoint saturation.
+    optional: false
     decorate: true
     decoration_config:
       # 85m was ~2x the ~43min this job averaged when it made two devops-bench
