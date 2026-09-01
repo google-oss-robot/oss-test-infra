@@ -2,10 +2,10 @@ presubmits:
   gke-labs/kube-agents:
   - name: pull-kube-agents-smoke-test
     # Boskos dynamically leases an evaluation project per run from the
-    # kube-agents-evals-project pool, which holds ten fully provisioned
-    # projects (kube-agents-evals through -10 — completed 2026-08-28).
+    # kube-agents-evals-project pool, which holds fifteen fully provisioned
+    # projects (kube-agents-evals through -15 — completed 2026-09-01).
     # max_concurrency matches the pool size, so the pool runs saturated.
-    max_concurrency: 10
+    max_concurrency: 15
     # Boskos server, pool config and reaper for build-kube-agents:
     # gke-internal/test-infra deployments/gke-agentic-tooling-team/boskos
     # That pool is the ceiling and this is the tap: raising this past the
