@@ -655,7 +655,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
+      - "-test_projects=gce-unstable-pkg-test-images"
       - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|lssd|metadata|network|packagevalidation|security|ssh|vmspec)$"
@@ -681,7 +681,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
+      - "-test_projects=gce-unstable-pkg-test-images"
       - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|metadata|network|packagevalidation|security|ssh|vmspec)$"
@@ -707,7 +707,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
+      - "-test_projects=gce-unstable-pkg-test-images"
       - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|metadata|network|packagevalidation|security|ssh|vmspec)$"
@@ -733,7 +733,7 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
+      - "-test_projects=gce-unstable-pkg-test-images"
       - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|metadata|network|packagevalidation|security|ssh|vmspec)$"
