@@ -655,8 +655,8 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
+      - "-test_projects=gce-unstable-pkg-test-images"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-east4-c,us-west1-a,europe-west1-b,europe-west4-a,asia-northeast1-b,asia-southeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|lssd|metadata|network|packagevalidation|security|ssh|vmspec)$"
       - "-set_exit_status=false"
@@ -681,8 +681,8 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
+      - "-test_projects=gce-unstable-pkg-test-images"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-east4-c,us-west1-a,europe-west1-b,europe-west4-a,asia-northeast1-b,asia-southeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|metadata|network|packagevalidation|security|ssh|vmspec)$"
       - "-set_exit_status=false"
@@ -707,8 +707,8 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
+      - "-test_projects=gce-unstable-pkg-test-images"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-east4-c,us-west1-a,europe-west1-b,europe-west4-a,asia-northeast1-b,asia-southeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|metadata|network|packagevalidation|security|ssh|vmspec)$"
       - "-set_exit_status=false"
@@ -733,8 +733,8 @@ periodics:
       args:
       - "-parallel_count=25"
       - "-project=gcp-guest"
-      - "-test_projects=compute-image-test-pool-002,compute-image-test-pool-003,compute-image-test-pool-004,compute-image-test-pool-005"
-      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-west1-a,europe-west1-b,asia-northeast1-b"
+      - "-test_projects=gce-unstable-pkg-test-images"
+      - "-zones=us-central1-a,us-central1-b,us-central1-c,us-central1-f,us-east4-c,us-west1-a,europe-west1-b,europe-west4-a,asia-northeast1-b,asia-southeast1-b"
       - "-all_image_families=gce-unstable-pkg-test-images"
       - "-filter=^(cvm|disk|guestagent|hostnamevalidation|hotattach|imageboot|licensevalidation|loadbalancer|metadata|network|packagevalidation|security|ssh|vmspec)$"
       - "-set_exit_status=false"
